@@ -194,19 +194,19 @@ public class ConfigUtil {
         return resultSorted.values().toArray(result);
     }
 
-
     private String[] getFilterCfgStrings(HostFilterList[] filterEntries) {
-        String[] result = {"", "", "", ""};
+        StringBuilder[] result = {new StringBuilder(), new StringBuilder(), new StringBuilder(), new StringBuilder()};
         String dim = "";
         for (int i = 0; i < filterEntries.length; i++) {
-            result[0] = result[0] + dim + filterEntries[i].active;
-            result[1] = result[1] + dim + filterEntries[i].id;
-            result[2] = result[2] + dim + filterEntries[i].url;
-            result[3] = result[3] + dim + filterEntries[i].category;
+            result[0].append(dim).append(filterEntries[i].active);
+            result[1].append(dim).append(filterEntries[i].id);
+            result[2].append(dim).append(filterEntries[i].url);
+            result[3].append(dim).append(filterEntries[i].category);
             dim = "; ";
         }
-        return result;
+        return new String[]{result[0].toString(), result[1].toString(), result[2].toString(), result[3].toString()};
     }
+
     public void setConfiguredFilterLists(HostFilterList[] filterLists) {
         String[] filterCfgStrings = getFilterCfgStrings(filterLists);
         updateConfigValue("filterAutoUpdateURL_switchs", filterCfgStrings[0]);

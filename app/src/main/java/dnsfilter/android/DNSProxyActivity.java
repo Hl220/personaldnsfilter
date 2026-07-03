@@ -46,6 +46,7 @@ import android.os.StrictMode;
 import android.text.Editable;
 import android.text.Html;
 import android.text.InputType;
+import android.text.Selection;
 import android.text.Spannable;
 import android.text.Spanned;
 import android.text.TextUtils;
@@ -306,8 +307,10 @@ public class DNSProxyActivity extends Activity
 					int start = logSize / 2;
 					while (start < logStr.length() - 1 && logStr.charAt(start) != '\n')
 						start++;
-					if (start < logStr.length() - 1)
+					if (start < logStr.length() - 1) {
+						Selection.removeSelection(logStr);
 						logStr.delete(0, start + 1);
+					}
 				}
 
 				if (!advancedConfigCheck.isChecked()) { //avoid focus lost when editing advanced settings
