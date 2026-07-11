@@ -729,17 +729,53 @@ public class DNSFilterService extends VpnService  {
 		noti.flags |= Notification.FLAG_NO_CLEAR | Notification.FLAG_ONGOING_EVENT;
 
 		if (Build.VERSION.SDK_INT >= 29) {
-			try {
-				startForeground(1, noti, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE);
-			} catch (SecurityException e) {
-				Logger.getLogger().logLine("Security Exception during service start with FOREGROUND_SERVICE_TYPE_SPECIAL_USE!");
-				Logger.getLogger().logLine("Falling back to FOREGROUND_SERVICE_TYPE_SYSTEM_EXEMPTED!");
-				startForeground(1, noti, ServiceInfo.FOREGROUND_SERVICE_TYPE_SYSTEM_EXEMPTED);
+
+			String manufacturer = Build.MANUFACTURER.toLowerCase();
+			boolean isSamsung = manufacturer.contains("samsung");
+
+			// Sequence of types depending on vendor
+			int primaryType;
+			String primaryTypeStr;
+			int fallbackType;
+			String fallbackTypeStr;
+
+			if (isSamsung) {
+				// Samsung: SYSTEM_EXEMPTED first, SPECIAL_USE as fallback
+				primaryType  = ServiceInfo.FOREGROUND_SERVICE_TYPE_SYSTEM_EXEMPTED;
+				primaryTypeStr = "FOREGROUND_SERVICE_TYPE_SYSTEM_EXEMPTED";
+				fallbackType = ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE;
+				fallbackTypeStr = "FOREGROUND_SERVICE_TYPE_SPECIAL_USE";
+			} else {
+				// Others: SPECIAL_USE first, SYSTEM_EXEMPTED as fallback
+				primaryType  = ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE;
+				primaryTypeStr = "FOREGROUND_SERVICE_TYPE_SPECIAL_USE";
+				fallbackType = ServiceInfo.FOREGROUND_SERVICE_TYPE_SYSTEM_EXEMPTED;
+				fallbackTypeStr = "FOREGROUND_SERVICE_TYPE_SYSTEM_EXEMPTED";
 			}
-		}
-		else
+
+			try {
+				startForeground(1, noti, primaryType);
+				Logger.getLogger().logLine("Started foreground service with type: " + primaryTypeStr + " (manufacturer=" + manufacturer + ")");
+				return;
+			} catch (SecurityException e) {
+				Logger.getLogger().logLine("FGS primary type not allowed: " + primaryTypeStr + " → trying fallback type: " + fallbackTypeStr);
+			}
+
+			try {
+				startForeground(1, noti, fallbackType);
+				Logger.getLogger().logLine("Started foreground service with fallback type: " + fallbackTypeStr + " (manufacturer=" + manufacturer + ")");
+				return;
+			} catch (SecurityException e) {
+				Logger.getLogger().logLine("FGS fallback type also not allowed: " + fallbackTypeStr + " → cannot start foreground service with valid type on this device!");
+				Logger.getLogger().logException(e);
+			}
+
+		} else {
+			// Legacy Android < 29
 			startForeground(1, noti);
+		}
 	}
+
 
 	private boolean startDNSFilter() {
 		if (is_running) {
