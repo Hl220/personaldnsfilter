@@ -1428,8 +1428,10 @@ public class DNSProxyActivity extends Activity
 				final int port;
 				try {
 					port = Integer.parseInt(ConfigurationAccess.getLocal().getConfig().getProperty("client_remote_ctrl_port", "3333"));
+					if (port <= 0 || port > 65535)
+						throw new IOException("Invalid port range: "+port);
 				} catch (Exception e) {
-					throw new IOException("Invalid connect_remote_ctrl_port");
+					throw new IOException("Invalid connect_remote_ctrl_port",e);
 				}
 
 				Runnable asyncConnect = new Runnable() {
