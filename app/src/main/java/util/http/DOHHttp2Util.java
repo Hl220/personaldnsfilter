@@ -355,6 +355,7 @@ public class DOHHttp2Util {
 
     public static SSLSocket openHttp2Socket(InetSocketAddress sadr, int timeout, Proxy proxy) throws IOException {
         Socket socket = null;
+        SSLSocket sslsocket = null;
         try {
             SSLContext sslContext = SSLContext.getDefault();
             if (proxy == Proxy.NO_PROXY) {
@@ -369,7 +370,7 @@ public class DOHHttp2Util {
             
             socket.setSoTimeout(timeout);
 
-            SSLSocket sslsocket = (SSLSocket) sslContext.getSocketFactory()
+            sslsocket = (SSLSocket) sslContext.getSocketFactory()
                     .createSocket(socket, sadr.getHostName(), sadr.getPort(), true);
             SSLParameters params = sslsocket.getSSLParameters();
             params.setApplicationProtocols(new String[]{"h2"});
@@ -419,25 +420,28 @@ public class DOHHttp2Util {
                     acked = true;
                 }
             }
-            return sslsocket;
-        } catch (IOException eio) {
-            if (socket != null) {
-                try {
-                    socket.close();
-                } catch (IOException e2) {
-                    // ignore
-                }
+            if (!acked) {
+                throw new IOException("Did not receive SETTINGS ACK from server within expected frames");
             }
+            return sslsocket;
+
+        } catch (IOException eio) {
+            cleanupOnError(socket, sslsocket);
             throw eio;
         } catch (Exception e) {
-            if (socket != null) {
-                try {
-                    socket.close();
-                } catch (IOException e2) {
-                    // ignore
-                }
-            }
+            cleanupOnError(socket, sslsocket);
             throw new IOException(e.getMessage(), e);
+        }
+    }
+
+    private static void cleanupOnError(Socket socket, SSLSocket sslsocket) {
+        try {
+            if (sslsocket != null)
+                sslsocket.close();
+            else if (socket!= null)
+                socket.close();
+        } catch (IOException e2) {
+            // ignore
         }
     }
 

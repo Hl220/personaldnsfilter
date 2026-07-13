@@ -1,7 +1,7 @@
  /* 
  PersonalHttpProxy 1.5
  PersonalDNSfilter 1.5
- Copyright (C) 2013-2019 Ingo Zenz
+ Copyright (C) 2013-2026 Ingo Zenz
 
  This program is free software; you can redistribute it and/or
  modify it under the terms of the GNU General Public License
@@ -79,7 +79,7 @@ import util.http.DOHHttp2Util;
 	private static byte[] NO_IP = new byte[]{0,0,0,0};
 	private static HashMap connPooled = new HashMap();
 	private static HashSet connAcquired = new HashSet();
-	private static Hashtable CUSTOM_HOSTS = getCustomHosts();
+	private static Hashtable CUSTOM_HOSTS = null;
 	private static String CUSTOM_HOSTS_FILE_NAME = null;
 	private static int  POOLTIMEOUT_SECONDS = 300;	
 	private static TimoutNotificator toNotify = TimoutNotificator.getNewInstance();
@@ -168,6 +168,7 @@ import util.http.DOHHttp2Util;
 	
 	public static void setCustomHostsFile(String filename) {
 		CUSTOM_HOSTS_FILE_NAME = filename;
+		CUSTOM_HOSTS = getCustomHosts();
 	}
 
 	private static Hashtable getCustomHosts() {
@@ -178,10 +179,11 @@ import util.http.DOHHttp2Util;
 		File hostsFile = new File(ExecutionEnvironment.getEnvironment().getWorkDir()+CUSTOM_HOSTS_FILE_NAME);
 		String entry = null;
 		Hashtable custom_hosts = null;
+		BufferedReader fin = null;
 		try {
 			if (hostsFile.exists()) {
 				custom_hosts = new Hashtable();			
-				BufferedReader fin = new BufferedReader(new InputStreamReader(new FileInputStream(hostsFile)));
+				fin = new BufferedReader(new InputStreamReader(new FileInputStream(hostsFile)));
 				while ((entry = fin.readLine()) != null) {
 					String[] hostEntry = parseHosts(entry);
 					if (hostEntry != null)
@@ -190,6 +192,14 @@ import util.http.DOHHttp2Util;
 			}
 		} catch (IOException ioe){
 			ioe.printStackTrace();
+		} finally{
+			if (fin != null) {
+				try {
+					fin.close();
+				} catch (IOException e) {
+					//ignore
+				}
+			}
 		}
 		return custom_hosts;
 	}
@@ -249,11 +259,15 @@ import util.http.DOHHttp2Util;
 		if (doh2) {
 			socket = establishDOH2Connection();
 		} else {
-
 			if (proxy == Proxy.NO_PROXY) {
 				socket = SocketChannel.open().socket();
-				ExecutionEnvironment.getEnvironment().protectSocket(socket, 0);
-				socket.connect(sadr, conTimeout);
+				try {
+					ExecutionEnvironment.getEnvironment().protectSocket(socket, 0);
+					socket.connect(sadr, conTimeout);
+				} catch (IOException e) {
+					try { socket.close(); } catch (IOException ignore) {}
+					throw e;
+				}
 			} else {
 				if (!(proxy instanceof HttpProxy))
 					throw new IOException("Only " + HttpProxy.class.getName() + " supported for creating connection over tunnel!");
@@ -262,10 +276,16 @@ import util.http.DOHHttp2Util;
 
 			//Logger.getLogger().logLine("NEW CONNECTION TO:"+socket);
 			if (ssl) {
-				socket.setSoTimeout(conTimeout); // avoid endless hang in SSL Handshake
-				if (sslSocketFactory == null)
-					sslSocketFactory = getDefaultSSLSocketFactory();
-				socket = sslSocketFactory.createSocket(socket, sadr.getHostName(), sadr.getPort(), true);
+				try {
+					socket.setSoTimeout(conTimeout); // avoid endless hang in SSL Handshake
+					if (sslSocketFactory == null)
+						sslSocketFactory = getDefaultSSLSocketFactory();
+
+					socket = sslSocketFactory.createSocket(socket, sadr.getHostName(), sadr.getPort(), true);
+				} catch (IOException e) {
+					try { socket.close(); } catch (IOException ignore) {}
+					throw e;
+				}
 				this.ssl = true;
 			}
 		}
