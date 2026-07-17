@@ -682,6 +682,9 @@ public class DOHHttp2Util {
                 //Logger.getLogger().logLine("Already retried!!!");
                 throw e;
             }
+        } catch (RuntimeException e) {
+            if (con != null) con.release(false);
+            throw new IOException("DoH: unexpected error processing response", e);
         }
     }
 
