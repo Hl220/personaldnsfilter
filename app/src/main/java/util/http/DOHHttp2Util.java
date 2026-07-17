@@ -684,7 +684,7 @@ public class DOHHttp2Util {
             }
         } catch (RuntimeException e) {
             if (con != null) con.release(false);
-            throw new IOException("DoH: unexpected error processing response", e);
+            throw new IOException("DoH: unexpected exception processing DOH2 DNS query", e);
         }
     }
 
