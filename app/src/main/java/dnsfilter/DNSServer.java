@@ -62,7 +62,15 @@ public class DNSServer {
 
     static int ANDROID_VERSION = -1;
 
-    private static DNSServer INSTANCE = new DNSServer(null,0,0);
+    private static DNSServer INSTANCE;
+
+    static {
+        try {
+            INSTANCE = new DNSServer(null,0,0);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     protected static Proxy proxy = Proxy.NO_PROXY;
 
@@ -237,7 +245,9 @@ public class DNSServer {
 
 
 
-    protected DNSServer (InetAddress address, int port, int timeout){
+    protected DNSServer (InetAddress address, int port, int timeout) throws IOException {
+        if (port < 0 || port > 65535)
+            throw new IOException("Invalid network port: "+port);
         this.address = new InetSocketAddress(address, port);
         this.timeout = timeout;
     }
@@ -453,7 +463,7 @@ class UDP extends DNSServer {
     private static int UDP_RETRY_CNT = 10;
     private static HashSet  sessions = new HashSet<DatagramSocket>();
 
-    protected UDP(InetAddress address, int port, int timeout) {
+    protected UDP(InetAddress address, int port, int timeout) throws IOException {
         super(address, port, timeout);
     }
     
