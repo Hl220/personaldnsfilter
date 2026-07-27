@@ -702,7 +702,7 @@ public class DNSFilterService extends VpnService  {
 						.setSmallIcon(R.drawable.icon)
 						.setContentIntent(pendingIntent)
 						//.setContentIntent(pause_resume_Intent)
-						.addAction(0, getResources().getString(R.string.switch_pause_resume), pause_resume_Intent)
+						.addAction(R.drawable.icon_pause_resume, getResources().getString(R.string.switch_pause_resume), pause_resume_Intent)
 						.setCategory(Notification.CATEGORY_SERVICE);
 
 				startForeground();

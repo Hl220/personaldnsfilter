@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Notification action icon for "pause_resume".
+    32dp square, single-color white glyph on transparent background,
+    matching the Holo Dark action bar visual style (as required by
+    Notification.Action: 32dp square, white, no shadow/gradient/bevel).
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="32dp"
+    android:height="32dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24"
+    android:tint="#FFFFFF">
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M6,19h4V5H6v14zM14,5v14h4V5h-4z"/>
+</vector>
