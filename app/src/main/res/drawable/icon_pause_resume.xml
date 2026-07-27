@@ -4,6 +4,8 @@
     32dp square, single-color white glyph on transparent background,
     matching the Holo Dark action bar visual style (as required by
     Notification.Action: 32dp square, white, no shadow/gradient/bevel).
+    Simple filled circle: neutral toggle symbol, valid for both the
+    "pause" and "resume" direction of this action.
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="32dp"
@@ -13,5 +15,5 @@
     android:tint="#FFFFFF">
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M6,19h4V5H6v14zM14,5v14h4V5h-4z"/>
+        android:pathData="M12,4a8,8 0,1,0 0.01,0z"/>
 </vector>
