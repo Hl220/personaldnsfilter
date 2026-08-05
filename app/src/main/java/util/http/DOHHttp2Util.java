@@ -461,29 +461,35 @@ public class DOHHttp2Util {
             return false;
         }
 
-        // Extract DNS header fields
         int flags   = ((resp[2] & 0xFF) << 8) | (resp[3] & 0xFF);
         int qdcount = ((resp[4] & 0xFF) << 8) | (resp[5] & 0xFF);
         int ancount = ((resp[6] & 0xFF) << 8) | (resp[7] & 0xFF);
+        int rcode   = flags & 0x0F;
 
-        // QR bit must be 1 (response)
-        boolean qr = (flags & 0x8000) != 0;
-        if (!qr) return false;
+        // QR bit must be 1
+        if ((flags & 0x8000) == 0) {
+            return false;
+        }
 
-        // Opcode must be 0 (standard query)
+        // Only standard queries
         int opcode = (flags >> 11) & 0xF;
-        if (opcode != 0) return false;
+        if (opcode != 0) {
+            return false;
+        }
 
-        // QDCOUNT must be >= 1 (DoH always echoes the question)
-        if (qdcount < 1 || qdcount > 5) return false;
+        // Successful responses should contain the question.
+        // Error responses may contain only the header.
+        if (rcode == 0 && (qdcount < 1 || qdcount > 5)) {
+            return false;
+        }
 
-        // ANCOUNT must be reasonable (0–20 is typical)
-        if (ancount < 0 || ancount > 50) return false;
+        // ANCOUNT sanity check
+        if (ancount > 50) {
+            return false;
+        }
 
-        // If we reach here, the header looks sane
         return true;
     }
-
 
     private static int MAX_RETRY = 4;
 
