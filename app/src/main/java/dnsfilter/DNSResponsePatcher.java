@@ -119,7 +119,7 @@ public class DNSResponsePatcher {
 				boolean filtered = false;
 
 				if ((type == 1 || type == 28)) {
-					if (!filter && checkCNAME && !host.equals(queryHost)) { //avoid duplicate checking same hosts
+					if (!filter && checkCNAME && !host.equalsIgnoreCase(queryHost)) { //avoid duplicate checking same hosts
 						filter = filter || filter(host, true);  //Handle CNAME Cloaking!
 						queryHost = host;
 					}
