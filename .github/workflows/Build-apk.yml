@@ -1,0 +1,47 @@
+name: Build personalDNSfilter APK
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request:
+    branches:
+      - master
+      - main
+  # Allows you to manually trigger the workflow from the Actions tab on GitHub
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the repository code
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Step 2: Set up Java Development Kit (JDK 17)
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      # Step 3: Grant execute permission for the Gradle wrapper script
+      - name: Make Gradle Wrapper Executable
+        run: chmod +x gradlew
+
+      # Step 4: Build the Debug APK
+      - name: Build Debug APK with Gradle
+        run: ./gradlew assembleDebug --stacktrace
+
+      # Step 5: Upload the generated APK as a downloadable build artifact
+      - name: Upload Debug APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: personalDNSfilter-debug-apk
+          path: app/build/outputs/apk/debug/*.apk
+          retention-days: 14
