@@ -1,14 +1,6 @@
 name: Build personalDNSfilter APK
 
 on:
-  push:
-    branches:
-      - master
-      - main
-  pull_request:
-    branches:
-      - master
-      - main
   # Allows you to manually trigger the workflow from the Actions tab on GitHub
   workflow_dispatch:
 
