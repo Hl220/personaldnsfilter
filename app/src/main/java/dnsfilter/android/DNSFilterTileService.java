@@ -90,9 +90,9 @@ public class DNSFilterTileService extends TileService {
     private void enableVpn() {
         try {
             boolean vpnInAdditionToProxyMode = Boolean.parseBoolean(
-                    ConfigurationAccess.getLocal().getConfig().getConfigValue("vpnInAdditionToProxyMode", "false"));
+                    ConfigurationAccess.getLocal().getConfig().getProperty("vpnInAdditionToProxyMode", "false"));
             boolean vpnDisabled = !vpnInAdditionToProxyMode &&
-                    Boolean.parseBoolean(ConfigurationAccess.getLocal().getConfig().getConfigValue("dnsProxyOnAndroid", "false"));
+                    Boolean.parseBoolean(ConfigurationAccess.getLocal().getConfig().getProperty("dnsProxyOnAndroid", "false"));
 
             Intent prepareIntent = null;
             if (!vpnDisabled)
